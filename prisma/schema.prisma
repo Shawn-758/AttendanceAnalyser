@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  name      String             @unique
+  records   AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  date        DateTime
+  inTime      DateTime?
+  outTime     DateTime?
+  workedHours Float     @default(0)
+  status      String // PRESENT, ABSENT
+  employeeId  String    @db.ObjectId
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+}
