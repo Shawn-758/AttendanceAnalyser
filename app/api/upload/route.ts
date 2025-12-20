@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
             date: baseDate,
             inTime: inTime,
             outTime: outTime,
-            isAbsent: !inTime || !outTime // Flag this row as absent immediately
+            isAbsent: !inTime || !outTime 
         };
     }).filter(d => d.name && d.date); // Filter junk rows
 

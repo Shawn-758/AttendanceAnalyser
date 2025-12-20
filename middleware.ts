@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   // Only apply to API routes
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const ip = request.headers.get("x-forwarded-for") || "unknown";
-    const limit = 5; // Limit to 5 requests
+    const limit = 10; // Limit to 5 requests
     const windowMs = 60 * 1000; // per 1 minute
 
     if (!ratelimit.has(ip)) {
