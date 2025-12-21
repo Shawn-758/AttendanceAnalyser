@@ -29,19 +29,16 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    const isValidFormat = /^\d{4}[-\/]\d{2}$/.test(month);
-    
-    if (isValidFormat) {
-        fetchData();
-    } else if (month === "") {
-      setData([]); // Clear data if month is cleared
-    }
-  }, [month]);
-
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+      alert("Please select a file to upload.");
+      return;
+    }
+    if (!month || !/^\d{4}[-\/]\d{2}$/.test(month)) {
+      alert("Please enter a valid month in YYYY-MM format.");
+      return;
+    }
     setLoading(true);
     const formData = new FormData();
     formData.append("file", file);
@@ -72,6 +69,15 @@ export default function Home() {
       fileInputRef.current.value = "";
     }
     setFile(null);
+  };
+
+  const handleRefresh = () => {
+    setData([]);
+    setMonth("");
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleDownloadExcel = () => {
@@ -164,7 +170,6 @@ export default function Home() {
                     placeholder="YYYY-MM" 
                     value={month}
                     onChange={(e) => setMonth(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && fetchData()}
                     className="bg-transparent border-none text-slate-700 text-sm rounded-xl focus:ring-0 block w-36 pl-10 p-2.5 cursor-text font-semibold placeholder-slate-400"
                 />
              </div>
@@ -216,6 +221,21 @@ export default function Home() {
             </form>
           </div>
         </div>
+
+        {data.length > 0 && (
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-full font-semibold transition-all duration-300 shadow-sm hover:shadow-md active:scale-95"
+              title="Reset to default state"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <Card title="Total Employees" value={data.length} icon="users" color="blue" />
