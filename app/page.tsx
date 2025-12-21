@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as xlsx from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -10,10 +10,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [month, setMonth] = useState(""); 
   const [data, setData] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = async () => {
     try {
-      const queryMonth = month || "2023-10"; 
+      const queryMonth = month; 
       // Adding timestamp to prevent caching
       const res = await fetch(`/api/stats?month=${queryMonth}&t=${new Date().getTime()}`, { 
         cache: 'no-store',
@@ -29,11 +30,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // LOGIC FIX: Only fetch if empty (initial load) OR if format is exactly YYYY-MM or YYYY/MM
     const isValidFormat = /^\d{4}[-\/]\d{2}$/.test(month);
     
-    if (month === "" || isValidFormat) {
+    if (isValidFormat) {
         fetchData();
+    } else if (month === "") {
+      setData([]); // Clear data if month is cleared
     }
   }, [month]);
 
@@ -66,6 +68,10 @@ export default function Home() {
       console.error(err);
     }
     setLoading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    setFile(null);
   };
 
   const handleDownloadExcel = () => {
@@ -187,9 +193,16 @@ export default function Home() {
             <form onSubmit={handleUpload} className="flex gap-4 items-center w-full md:w-auto">
               <label className="flex-1 cursor-pointer">
                 <input 
+                  ref={fileInputRef}
                   type="file" 
                   accept=".xlsx" 
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const newFile = e.target.files?.[0] || null;
+                    setFile(newFile);
+                    if (newFile) {
+                      setData([]); // Clear previous data on new file selection
+                    }
+                  }}
                   className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 transition-all"
                 />
               </label>
